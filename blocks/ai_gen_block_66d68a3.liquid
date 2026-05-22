@@ -1,0 +1,364 @@
+{% doc %}
+  @prompt
+    Create a mobile-optimized rotating text section that continuously scrolls text from right to left. The text should smoothly animate in a horizontal marquee style, perfect for announcements, promotions, or featured messages on mobile devices. Include customizable text content and animation speed controls., FOR MULTIPLE TEXT MORE THEN 4
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-marquee-container-{{ ai_gen_id }} {
+    width: 100%;
+    overflow: hidden;
+    background-color: {{ block.settings.background_color }};
+    padding: {{ block.settings.vertical_padding }}px 0;
+    position: relative;
+  }
+
+  .ai-marquee-wrapper-{{ ai_gen_id }} {
+    display: flex;
+    white-space: nowrap;
+    animation: ai-marquee-scroll-{{ ai_gen_id }} {{ block.settings.animation_speed }}s linear infinite;
+  }
+
+  .ai-marquee-text-{{ ai_gen_id }} {
+    color: {{ block.settings.text_color }};
+    font-size: {{ block.settings.font_size }}px;
+    font-weight: {{ block.settings.font_weight }};
+    text-transform: {{ block.settings.text_transform }};
+    letter-spacing: {{ block.settings.letter_spacing }}px;
+    padding-right: {{ block.settings.text_spacing }}px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .ai-marquee-separator-{{ ai_gen_id }} {
+    color: {{ block.settings.separator_color }};
+    font-size: {{ block.settings.font_size }}px;
+    padding: 0 {{ block.settings.separator_spacing }}px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  @keyframes ai-marquee-scroll-{{ ai_gen_id }} {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+
+  .ai-marquee-container-{{ ai_gen_id }}:hover .ai-marquee-wrapper-{{ ai_gen_id }} {
+    {% if block.settings.pause_on_hover %}
+      animation-play-state: paused;
+    {% endif %}
+  }
+
+  @media screen and (min-width: 750px) {
+    .ai-marquee-text-{{ ai_gen_id }} {
+      font-size: {{ block.settings.font_size | times: 1.2 }}px;
+    }
+    .ai-marquee-separator-{{ ai_gen_id }} {
+      font-size: {{ block.settings.font_size | times: 1.2 }}px;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .ai-marquee-text-{{ ai_gen_id }} {
+      font-size: {{ block.settings.font_size | times: 1.4 }}px;
+    }
+    .ai-marquee-separator-{{ ai_gen_id }} {
+      font-size: {{ block.settings.font_size | times: 1.4 }}px;
+    }
+  }
+{% endstyle %}
+
+<div 
+  class="ai-marquee-container-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+  role="banner"
+  aria-label="Scrolling announcements"
+>
+  <div class="ai-marquee-wrapper-{{ ai_gen_id }}">
+    {% assign texts_array = '' %}
+    
+    {% if block.settings.text_1 != blank %}
+      {% assign texts_array = texts_array | append: block.settings.text_1 | append: '||' %}
+    {% endif %}
+    {% if block.settings.text_2 != blank %}
+      {% assign texts_array = texts_array | append: block.settings.text_2 | append: '||' %}
+    {% endif %}
+    {% if block.settings.text_3 != blank %}
+      {% assign texts_array = texts_array | append: block.settings.text_3 | append: '||' %}
+    {% endif %}
+    {% if block.settings.text_4 != blank %}
+      {% assign texts_array = texts_array | append: block.settings.text_4 | append: '||' %}
+    {% endif %}
+    {% if block.settings.text_5 != blank %}
+      {% assign texts_array = texts_array | append: block.settings.text_5 | append: '||' %}
+    {% endif %}
+    {% if block.settings.text_6 != blank %}
+      {% assign texts_array = texts_array | append: block.settings.text_6 | append: '||' %}
+    {% endif %}
+    {% if block.settings.text_7 != blank %}
+      {% assign texts_array = texts_array | append: block.settings.text_7 | append: '||' %}
+    {% endif %}
+    {% if block.settings.text_8 != blank %}
+      {% assign texts_array = texts_array | append: block.settings.text_8 | append: '||' %}
+    {% endif %}
+
+    {% assign texts = texts_array | split: '||' %}
+    
+    {% if texts.size > 0 %}
+      {% for i in (1..block.settings.repeat_count) %}
+        {% for text in texts %}
+          {% if text != blank %}
+            <span class="ai-marquee-text-{{ ai_gen_id }}">{{ text }}</span>
+            {% unless forloop.last %}
+              <span class="ai-marquee-separator-{{ ai_gen_id }}">{{ block.settings.separator }}</span>
+            {% endunless %}
+          {% endif %}
+        {% endfor %}
+        {% unless forloop.last %}
+          <span class="ai-marquee-separator-{{ ai_gen_id }}">{{ block.settings.separator }}</span>
+        {% endunless %}
+      {% endfor %}
+    {% else %}
+      {% for i in (1..3) %}
+        <span class="ai-marquee-text-{{ ai_gen_id }}">Add your announcement text</span>
+        {% unless forloop.last %}
+          <span class="ai-marquee-separator-{{ ai_gen_id }}">{{ block.settings.separator }}</span>
+        {% endunless %}
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Multi-text marquee",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Text content"
+    },
+    {
+      "type": "text",
+      "id": "text_1",
+      "label": "Text 1",
+      "default": "🎉 Special offer! Free shipping on orders over $50"
+    },
+    {
+      "type": "text",
+      "id": "text_2",
+      "label": "Text 2",
+      "default": "⭐ New arrivals now available"
+    },
+    {
+      "type": "text",
+      "id": "text_3",
+      "label": "Text 3",
+      "default": "🚚 Fast delivery worldwide"
+    },
+    {
+      "type": "text",
+      "id": "text_4",
+      "label": "Text 4",
+      "default": "💝 Gift wrapping available"
+    },
+    {
+      "type": "text",
+      "id": "text_5",
+      "label": "Text 5"
+    },
+    {
+      "type": "text",
+      "id": "text_6",
+      "label": "Text 6"
+    },
+    {
+      "type": "text",
+      "id": "text_7",
+      "label": "Text 7"
+    },
+    {
+      "type": "text",
+      "id": "text_8",
+      "label": "Text 8"
+    },
+    {
+      "type": "text",
+      "id": "separator",
+      "label": "Text separator",
+      "default": "•"
+    },
+    {
+      "type": "range",
+      "id": "repeat_count",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "label": "Text repetitions",
+      "default": 2
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "range",
+      "id": "animation_speed",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "unit": "s",
+      "label": "Animation speed",
+      "default": 30
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "min": 12,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Font size (mobile)",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "font_weight",
+      "label": "Font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "select",
+      "id": "text_transform",
+      "label": "Text case",
+      "options": [
+        {
+          "value": "none",
+          "label": "Normal"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        },
+        {
+          "value": "lowercase",
+          "label": "Lowercase"
+        },
+        {
+          "value": "capitalize",
+          "label": "Capitalize"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "letter_spacing",
+      "min": 0,
+      "max": 3,
+      "step": 0.5,
+      "unit": "px",
+      "label": "Letter spacing",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "vertical_padding",
+      "min": 8,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Vertical padding",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "text_spacing",
+      "min": 20,
+      "max": 200,
+      "step": 20,
+      "unit": "px",
+      "label": "Space between texts",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "separator_spacing",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Separator spacing",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "separator_color",
+      "label": "Separator color",
+      "default": "#ffffff"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Multi-text marquee"
+    }
+  ],
+  "tag": null
+}
+{% endschema %}

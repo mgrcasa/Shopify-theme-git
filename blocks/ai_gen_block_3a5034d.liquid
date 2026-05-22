@@ -1,0 +1,331 @@
+{% doc %}
+  @prompt
+    Create a continuous rolling text marquee section that scrolls from right to left infinitely. Allow multiple customizable text entries that display in a seamless loop. Include settings to add/remove text items, adjust scroll speed, text size, colors, and spacing. The animation should be smooth CSS-based with no gaps between loops. Make it responsive and include options for background colors and text styling.
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-marquee-container-{{ ai_gen_id }} {
+    width: 100%;
+    overflow: hidden;
+    background-color: {{ block.settings.background_color }};
+    padding: {{ block.settings.vertical_padding }}px 0;
+    position: relative;
+  }
+
+  .ai-marquee-track-{{ ai_gen_id }} {
+    display: flex;
+    width: max-content;
+    animation: ai-marquee-scroll-{{ ai_gen_id }} {{ block.settings.scroll_speed }}s linear infinite;
+    gap: {{ block.settings.text_spacing }}px;
+  }
+
+  .ai-marquee-item-{{ ai_gen_id }} {
+    white-space: nowrap;
+    font-size: {{ block.settings.text_size }}px;
+    color: {{ block.settings.text_color }};
+    font-weight: {{ block.settings.text_weight }};
+    text-transform: {{ block.settings.text_transform }};
+    letter-spacing: {{ block.settings.letter_spacing }}px;
+    flex-shrink: 0;
+  }
+
+  .ai-marquee-separator-{{ ai_gen_id }} {
+    color: {{ block.settings.separator_color }};
+    font-size: {{ block.settings.text_size }}px;
+    flex-shrink: 0;
+  }
+
+  @keyframes ai-marquee-scroll-{{ ai_gen_id }} {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .ai-marquee-track-{{ ai_gen_id }}:hover {
+    animation-play-state: {{ block.settings.pause_on_hover | default: false | ternary: 'paused', 'running' }};
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-marquee-item-{{ ai_gen_id }} {
+      font-size: {{ block.settings.text_size | times: 0.8 }}px;
+    }
+    
+    .ai-marquee-separator-{{ ai_gen_id }} {
+      font-size: {{ block.settings.text_size | times: 0.8 }}px;
+    }
+    
+    .ai-marquee-container-{{ ai_gen_id }} {
+      padding: {{ block.settings.vertical_padding | times: 0.7 }}px 0;
+    }
+  }
+{% endstyle %}
+
+<div class="ai-marquee-container-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-marquee-track-{{ ai_gen_id }}">
+    {% liquid
+      assign text_items = ''
+      assign separator = block.settings.separator | default: '•'
+      
+      for i in (1..10)
+        assign text_key = 'text_' | append: i
+        assign text_value = block.settings[text_key]
+        if text_value != blank
+          if text_items != blank
+            assign text_items = text_items | append: '|' | append: text_value
+          else
+            assign text_items = text_value
+          endif
+        endif
+      endfor
+      
+      assign text_array = text_items | split: '|'
+    %}
+    
+    {% if text_array.size > 0 %}
+      {% for i in (1..2) %}
+        {% for text in text_array %}
+          <span class="ai-marquee-item-{{ ai_gen_id }}">{{ text }}</span>
+          {% unless forloop.last and forloop.parentloop.last %}
+            <span class="ai-marquee-separator-{{ ai_gen_id }}">{{ separator }}</span>
+          {% endunless %}
+        {% endfor %}
+      {% endfor %}
+    {% else %}
+      {% for i in (1..2) %}
+        <span class="ai-marquee-item-{{ ai_gen_id }}">Add your text content in the block settings</span>
+        <span class="ai-marquee-separator-{{ ai_gen_id }}">{{ separator }}</span>
+        <span class="ai-marquee-item-{{ ai_gen_id }}">Customize colors, speed, and styling</span>
+        <span class="ai-marquee-separator-{{ ai_gen_id }}">{{ separator }}</span>
+        <span class="ai-marquee-item-{{ ai_gen_id }}">Perfect for announcements and promotions</span>
+        {% unless forloop.last %}
+          <span class="ai-marquee-separator-{{ ai_gen_id }}">{{ separator }}</span>
+        {% endunless %}
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Rolling text marquee",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Text content"
+    },
+    {
+      "type": "text",
+      "id": "text_1",
+      "label": "Text 1",
+      "default": "Welcome to our store"
+    },
+    {
+      "type": "text",
+      "id": "text_2",
+      "label": "Text 2",
+      "default": "Free shipping on orders over $50"
+    },
+    {
+      "type": "text",
+      "id": "text_3",
+      "label": "Text 3",
+      "default": "New arrivals every week"
+    },
+    {
+      "type": "text",
+      "id": "text_4",
+      "label": "Text 4"
+    },
+    {
+      "type": "text",
+      "id": "text_5",
+      "label": "Text 5"
+    },
+    {
+      "type": "text",
+      "id": "text_6",
+      "label": "Text 6"
+    },
+    {
+      "type": "text",
+      "id": "text_7",
+      "label": "Text 7"
+    },
+    {
+      "type": "text",
+      "id": "text_8",
+      "label": "Text 8"
+    },
+    {
+      "type": "text",
+      "id": "text_9",
+      "label": "Text 9"
+    },
+    {
+      "type": "text",
+      "id": "text_10",
+      "label": "Text 10"
+    },
+    {
+      "type": "text",
+      "id": "separator",
+      "label": "Separator character",
+      "default": "•",
+      "info": "Character displayed between text items"
+    },
+    {
+      "type": "header",
+      "content": "Animation settings"
+    },
+    {
+      "type": "range",
+      "id": "scroll_speed",
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "unit": "s",
+      "label": "Scroll speed",
+      "default": 30,
+      "info": "Higher values = slower scrolling"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "min": 12,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "label": "Text size",
+      "default": 24
+    },
+    {
+      "type": "select",
+      "id": "text_weight",
+      "label": "Text weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "select",
+      "id": "text_transform",
+      "label": "Text case",
+      "options": [
+        {
+          "value": "none",
+          "label": "Normal"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        },
+        {
+          "value": "lowercase",
+          "label": "Lowercase"
+        },
+        {
+          "value": "capitalize",
+          "label": "Capitalize"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "letter_spacing",
+      "min": 0,
+      "max": 5,
+      "step": 0.5,
+      "unit": "px",
+      "label": "Letter spacing",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "separator_color",
+      "label": "Separator color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "text_spacing",
+      "min": 20,
+      "max": 100,
+      "step": 10,
+      "unit": "px",
+      "label": "Space between items",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "vertical_padding",
+      "min": 10,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "label": "Vertical padding",
+      "default": 20
+    }
+  ],
+  "presets": [
+    {
+      "name": "Rolling text marquee"
+    }
+  ]
+}
+{% endschema %}

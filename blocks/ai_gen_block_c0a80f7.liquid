@@ -1,0 +1,502 @@
+{% doc %}
+  @prompt
+    Create a video section with 9:16 aspect ratio displaying 6+ videos in a horizontal row. Each video must have autoplay, muted, loop, and playsinline attributes for maximum browser compatibility. Include proper HTML5 video tags with all autoplay-enabling attributes: autoplay, muted, loop, playsinline, and controls="false". Add JavaScript to ensure videos start playing on page load and handle any browser restrictions. Make it responsive with smooth horizontal scrolling., video add by my side not link
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-video-gallery-{{ ai_gen_id }} {
+    width: 100%;
+    overflow: hidden;
+    padding: {{ block.settings.section_padding }}px 0;
+    background-color: {{ block.settings.background_color }};
+  }
+
+  .ai-video-gallery__container-{{ ai_gen_id }} {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+  }
+
+  .ai-video-gallery__container-{{ ai_gen_id }}::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ai-video-gallery__track-{{ ai_gen_id }} {
+    display: flex;
+    gap: {{ block.settings.video_gap }}px;
+    padding: 0 {{ block.settings.horizontal_padding }}px;
+    width: max-content;
+  }
+
+  .ai-video-gallery__item-{{ ai_gen_id }} {
+    flex-shrink: 0;
+    width: {{ block.settings.video_width }}px;
+    height: calc({{ block.settings.video_width }}px * 16 / 9);
+    border-radius: {{ block.settings.border_radius }}px;
+    overflow: hidden;
+    position: relative;
+    background-color: #000;
+  }
+
+  .ai-video-gallery__video-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;display: block;
+  }
+  /* ✅ Fix vertical scroll blocking on mobile */
+  .ai-video-gallery__video-wrapper-{{ ai_gen_id }},
+  .ai-video-gallery__video-{{ ai_gen_id }} {
+    touch-action: pan-y; /* allow up/down scrolling */
+  }
+
+  .ai-video-gallery__placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .ai-video-gallery__placeholder-{{ ai_gen_id }} svg {
+    width: 60px;
+    height: 60px;
+    color: #999;
+  }
+
+  .ai-video-gallery__empty-state-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 12px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 12px;
+    border-radius: 4px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .ai-video-gallery__play-indicator-{{ ai_gen_id }} {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;pointer-events: none;
+  }
+
+  .ai-video-gallery__item-{{ ai_gen_id }}:hover .ai-video-gallery__play-indicator-{{ ai_gen_id }} {
+    opacity: 1;
+  }
+
+  .ai-video-gallery__play-indicator-{{ ai_gen_id }} svg {
+    width: 16px;
+    height: 16px;
+    color: #000;
+    margin-left: 2px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-video-gallery__item-{{ ai_gen_id }} {
+      width: {{ block.settings.video_width_mobile }}px;
+      height: calc({{ block.settings.video_width_mobile }}px * 16 / 9);
+    }
+
+    .ai-video-gallery__track-{{ ai_gen_id }} {
+      gap: {{ block.settings.video_gap_mobile }}px;
+      padding: 0 {{ block.settings.horizontal_padding_mobile }}px;
+    }
+  }
+
+  {% if block.settings.show_title %}
+    .ai-video-gallery__title-{{ ai_gen_id }} {
+      text-align: {{ block.settings.title_alignment }};
+      margin-bottom: {{ block.settings.title_margin }}px;
+      padding:0 {{ block.settings.horizontal_padding }}px;
+      color: {{ block.settings.title_color }};
+      font-size: {{ block.settings.title_size }}px;
+      margin-top: 0;
+    }
+
+    @media screen and (max-width: 749px) {
+      .ai-video-gallery__title-{{ ai_gen_id }} {
+        padding: 0 {{ block.settings.horizontal_padding_mobile }}px;
+      }
+    }
+  {% endif %}
+{% endstyle %}<video-gallery-{{ ai_gen_id }}
+  class="ai-video-gallery-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  {% if block.settings.show_title and block.settings.title != blank %}
+    <h2 class="ai-video-gallery__title-{{ ai_gen_id }}">{{ block.settings.title }}</h2>
+  {% endif %}
+
+  <div class="ai-video-gallery__container-{{ ai_gen_id }}">
+    <div class="ai-video-gallery__track-{{ ai_gen_id }}">
+      {% for i in (1..6) %}
+        {% liquid
+          assign video_key = 'video_' | append: i
+          assign video = block.settings[video_key]
+        %}<div class="ai-video-gallery__item-{{ ai_gen_id }}">
+          {% if video != blank %}
+            <video
+              class="ai-video-gallery__video-{{ ai_gen_id }}"
+              autoplay
+              muted
+              loop
+              playsinline
+              controls="false"
+              preload="metadata"
+              data-video-index="{{ i }}"
+            >
+              {% for source in video.sources %}
+                <source src="{{ source.url }}" type="{{ source.mime_type }}">
+              {% endfor %}Your browser does not support the video tag.
+            </video>
+            <div class="ai-video-gallery__play-indicator-{{ ai_gen_id }}">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </div>
+          {% else %}
+            <div class="ai-video-gallery__placeholder-{{ ai_gen_id }}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <div class="ai-video-gallery__empty-state-{{ ai_gen_id }}">
+                Add video {{ i }}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</video-gallery-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class VideoGallery{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.videos = [];
+        this.intersectionObserver = null;
+      }
+
+      connectedCallback() {
+        this.videos = this.querySelectorAll('.ai-video-gallery__video-{{ ai_gen_id }}');
+        this.initializeVideos();
+        this.setupIntersectionObserver();
+        this.handleUserInteraction();
+      }
+
+      disconnectedCallback() {
+        if (this.intersectionObserver) {
+          this.intersectionObserver.disconnect();
+        }
+      }
+
+      initializeVideos() {
+        this.videos.forEach((video, index) => {
+          video.addEventListener('loadedmetadata', () => {
+            this.attemptAutoplay(video);
+          });
+
+          video.addEventListener('canplay', () => {
+            this.attemptAutoplay(video);
+          });
+
+          video.addEventListener('play', () => {
+            video.setAttribute('data-playing', 'true');
+          });
+
+          video.addEventListener('pause', () => {
+            video.removeAttribute('data-playing');
+          });
+
+          if (video.readyState >= 3) {
+            this.attemptAutoplay(video);
+          }
+        });
+      }
+
+      attemptAutoplay(video) {
+        if (video.paused) {
+          const playPromise = video.play();
+          
+          if (playPromise !== undefined) {
+            playPromise.catch((error) => {
+              console.log('Autoplay prevented for video:', error);
+            });
+          }
+        }
+      }
+
+      setupIntersectionObserver() {
+        const options = {
+          root: null,
+          rootMargin: '0px',
+          threshold: 0.5
+        };
+
+        this.intersectionObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            const video = entry.target;
+            if (entry.isIntersecting) {
+              this.attemptAutoplay(video);
+            } else {
+              if (!video.paused) {
+                video.pause();
+              }
+            }
+          });
+        }, options);
+
+        this.videos.forEach((video) => {
+          this.intersectionObserver.observe(video);
+        });
+      }
+
+      handleUserInteraction() {
+        const startAllVideos = () => {
+          this.videos.forEach((video) => {
+            this.attemptAutoplay(video);
+          });
+          document.removeEventListener('click', startAllVideos);
+          document.removeEventListener('touchstart', startAllVideos);document.removeEventListener('keydown', startAllVideos);
+        };
+
+        document.addEventListener('click', startAllVideos);
+        document.addEventListener('touchstart', startAllVideos);
+        document.addEventListener('keydown', startAllVideos);
+
+        setTimeout(() => {
+          document.removeEventListener('click', startAllVideos);
+          document.removeEventListener('touchstart', startAllVideos);
+          document.removeEventListener('keydown', startAllVideos);
+        }, 5000);
+      }
+    }
+
+    customElements.define('video-gallery-{{ ai_gen_id }}', VideoGallery{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Video gallery",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Title"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Video Gallery"
+    },
+    {
+      "type": "select",
+      "id": "title_alignment",
+      "label": "Title alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Title size",
+      "default": 24
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "title_margin",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Title bottom margin",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "horizontal_padding",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Horizontal padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "horizontal_padding_mobile",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Horizontal padding mobile",
+      "default": 15
+    },
+    {
+      "type": "header",
+      "content": "Videos"
+    },
+    {
+      "type": "range",
+      "id": "video_width",
+      "min": 200,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "label": "Video width",
+      "default": 280
+    },
+    {
+      "type": "range",
+      "id": "video_width_mobile",
+      "min": 150,
+      "max": 300,
+      "step": 10,
+      "unit": "px",
+      "label": "Video width mobile",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "video_gap",
+      "min": 5,
+      "max": 40,
+      "step": 5,
+      "unit": "px",
+      "label": "Video spacing",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "video_gap_mobile",
+      "min": 5,
+      "max": 30,
+      "step": 5,
+      "unit": "px",
+      "label": "Video spacing mobile",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Video files"
+    },
+    {
+      "type": "video",
+      "id": "video_1",
+      "label": "Video 1"
+    },
+    {
+      "type": "video",
+      "id": "video_2",
+      "label": "Video 2"
+    },
+    {
+      "type": "video",
+      "id": "video_3",
+      "label": "Video 3"
+    },
+    {
+      "type": "video",
+      "id": "video_4",
+      "label": "Video 4"
+    },
+    {
+      "type": "video",
+      "id": "video_5",
+      "label": "Video 5"
+    },
+    {
+      "type": "video",
+      "id": "video_6",
+      "label": "Video 6"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video gallery"
+    }
+  ]
+}
+{% endschema %}

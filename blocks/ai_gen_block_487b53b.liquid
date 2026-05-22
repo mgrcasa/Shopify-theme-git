@@ -1,0 +1,655 @@
+{% doc %}
+  @prompt
+    Create a mobile-optimized video gallery section that displays more than 6 videos in a horizontal row with navigation buttons to change between videos. The videos should have a 9:16 aspect ratio (portrait/vertical format), include left and right arrow buttons or swipe controls to navigate through the video collection, autoplay when visible, loop continuously, and be optimized for mobile viewing with smooth transitions between videos.
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-video-gallery-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    background-color: {{ block.settings.background_color }};
+    padding: {{ block.settings.section_padding }}px 0;
+  }
+
+  .ai-video-gallery__container-{{ ai_gen_id }} {
+    position: relative;
+    max-width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  .ai-video-gallery__header-{{ ai_gen_id }} {
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 0 20px;
+  }
+
+  .ai-video-gallery__title-{{ ai_gen_id }} {
+    color: {{ block.settings.text_color }};
+    margin: 0 0 12px;
+    font-size: {{ block.settings.title_size }}px;
+  }
+
+  .ai-video-gallery__subtitle-{{ ai_gen_id }} {
+    color: {{ block.settings.text_color }};
+    margin: 0;
+    opacity: 0.8;
+    font-size: {{ block.settings.subtitle_size }}px;
+  }
+
+  .ai-video-gallery__viewport-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding: 0 60px;
+  }
+
+  .ai-video-gallery__track-{{ ai_gen_id }} {
+    display: flex;
+    gap: {{ block.settings.video_gap }}px;
+    transition: transform 0.3s ease;will-change: transform;
+  }
+
+  .ai-video-gallery__slide-{{ ai_gen_id }} {
+    flex: 0 0 auto;
+    width: {{ block.settings.video_width }}px;
+    height: calc({{ block.settings.video_width }}px * 16/ 9);
+    position: relative;
+    border-radius: {{ block.settings.video_border_radius }}px;
+    overflow: hidden;
+    background-color: #000;
+  }
+
+  .ai-video-gallery__video-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .ai-video-gallery__placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size:14px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .ai-video-gallery__nav-button-{{ ai_gen_id }} {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: {{ block.settings.nav_button_color }};
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .ai-video-gallery__nav-button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.nav_button_hover_color }};
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  .ai-video-gallery__nav-button-{{ ai_gen_id }}:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: translateY(-50%) scale(1);
+  }
+
+  .ai-video-gallery__nav-button--prev-{{ ai_gen_id }} {
+    left: 10px;
+  }
+
+  .ai-video-gallery__nav-button--next-{{ ai_gen_id }} {
+    right: 10px;
+  }
+
+  .ai-video-gallery__nav-icon-{{ ai_gen_id }} {
+    width: 20px;
+    height: 20px;
+    color: {{ block.settings.nav_icon_color }};
+  }
+
+  .ai-video-gallery__dots-{{ ai_gen_id }} {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+    padding: 0 20px;
+  }
+
+  .ai-video-gallery__dot-{{ ai_gen_id }} {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: {{ block.settings.dot_color }};
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.4;
+  }
+
+  .ai-video-gallery__dot-{{ ai_gen_id }}.active {
+    opacity: 1;
+    background-color: {{ block.settings.dot_active_color }};
+    transform: scale(1.2);
+  }
+
+  @media screen and (max-width: 768px) {
+    .ai-video-gallery__viewport-{{ ai_gen_id }} {
+      padding: 0 50px;
+    }
+
+    .ai-video-gallery__slide-{{ ai_gen_id }} {
+      width: {{ block.settings.video_width_mobile }}px;
+      height: calc({{ block.settings.video_width_mobile }}px * 16 / 9);
+    }
+
+    .ai-video-gallery__nav-button-{{ ai_gen_id }} {
+      width: 36px;
+      height: 36px;
+    }
+
+    .ai-video-gallery__nav-icon-{{ ai_gen_id }} {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .ai-video-gallery__viewport-{{ ai_gen_id }} {
+      padding: 0 40px;
+    }
+
+    .ai-video-gallery__slide-{{ ai_gen_id }} {
+      width: {{ block.settings.video_width_mobile | times: 0.9 }}px;
+      height: calc({{ block.settings.video_width_mobile | times: 0.9 }}px * 16 / 9);
+    }
+  }
+{% endstyle %}
+
+<video-gallery-{{ ai_gen_id }}
+  class="ai-video-gallery-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+  data-autoplay="{{ block.settings.autoplay }}"
+  data-videos-per-view="{{ block.settings.videos_per_view }}"
+>
+  {% if block.settings.title != blank or block.settings.subtitle != blank %}
+    <div class="ai-video-gallery__header-{{ ai_gen_id }}">
+      {% if block.settings.title != blank %}
+        <h2 class="ai-video-gallery__title-{{ ai_gen_id }}">{{ block.settings.title }}</h2>
+      {% endif %}
+      {% if block.settings.subtitle != blank %}
+        <p class="ai-video-gallery__subtitle-{{ ai_gen_id }}">{{ block.settings.subtitle }}</p>
+      {% endif %}
+    </div>
+  {% endif %}<div class="ai-video-gallery__container-{{ ai_gen_id }}">
+    <div class="ai-video-gallery__viewport-{{ ai_gen_id }}">
+      <div class="ai-video-gallery__track-{{ ai_gen_id }}">
+        {% for i in (1..10) %}
+          {% assign video_key = 'video_' | append: i %}
+          {% assign video = block.settings[video_key] %}
+          
+          {% if video != blank %}
+            <div class="ai-video-gallery__slide-{{ ai_gen_id }}" data-slide-index="{{ forloop.index0 }}">
+              <video
+                class="ai-video-gallery__video-{{ ai_gen_id }}"
+                {% if block.settings.autoplay %}autoplay{% endif %}
+                muted
+                loop
+                playsinline
+                preload="metadata"
+              >
+                <source src="{{ video }}" type="video/mp4"></video>
+            </div>
+          {% elsif forloop.index <=6 %}
+            <div class="ai-video-gallery__slide-{{ ai_gen_id }}" data-slide-index="{{ forloop.index0 }}">
+              <div class="ai-video-gallery__placeholder-{{ ai_gen_id }}">
+                Add video {{ forloop.index }}
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <button
+      class="ai-video-gallery__nav-button-{{ ai_gen_id }} ai-video-gallery__nav-button--prev-{{ ai_gen_id }}"
+      aria-label="Previous videos"
+      type="button"
+    >
+      <svg class="ai-video-gallery__nav-icon-{{ ai_gen_id }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <button
+      class="ai-video-gallery__nav-button-{{ ai_gen_id }} ai-video-gallery__nav-button--next-{{ ai_gen_id }}"
+      aria-label="Next videos"
+      type="button"
+    >
+      <svg class="ai-video-gallery__nav-icon-{{ ai_gen_id }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </button>
+  </div>
+
+  {% if block.settings.show_dots %}
+    <div class="ai-video-gallery__dots-{{ ai_gen_id }}"></div>
+  {% endif %}
+</video-gallery-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class VideoGallery{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.currentIndex = 0;
+        this.videosPerView = parseInt(this.dataset.videosPerView) || 3;
+        this.autoplay = this.dataset.autoplay === 'true';
+        this.touchStartX = 0;
+        this.touchEndX = 0;
+        this.isTransitioning = false;
+      }
+
+      connectedCallback() {
+        this.track = this.querySelector('.ai-video-gallery__track-{{ ai_gen_id }}');
+        this.slides = this.querySelectorAll('.ai-video-gallery__slide-{{ ai_gen_id }}');
+        this.prevButton = this.querySelector('.ai-video-gallery__nav-button--prev-{{ ai_gen_id }}');
+        this.nextButton = this.querySelector('.ai-video-gallery__nav-button--next-{{ ai_gen_id }}');
+        this.dotsContainer = this.querySelector('.ai-video-gallery__dots-{{ ai_gen_id }}');
+
+        if (this.slides.length === 0) return;
+
+        this.setupResponsive();
+        this.setupNavigation();
+        this.setupTouchGestures();
+        this.setupDots();
+        this.setupIntersectionObserver();
+        this.updateView();
+
+        window.addEventListener('resize', () => this.setupResponsive());
+      }
+
+      setupResponsive() {
+        const isMobile = window.innerWidth <= 768;
+        this.videosPerView = isMobile ? 1 : parseInt(this.dataset.videosPerView) || 3;
+        this.maxIndex = Math.max(0, this.slides.length - this.videosPerView);
+        
+        if (this.currentIndex > this.maxIndex) {
+          this.currentIndex = this.maxIndex;
+        }
+        
+        this.updateView();
+      }
+
+      setupNavigation() {
+        this.prevButton.addEventListener('click', () => this.goToPrevious());
+        this.nextButton.addEventListener('click', () => this.goToNext());
+      }
+
+      setupTouchGestures() {
+        this.track.addEventListener('touchstart', (e) => {
+          this.touchStartX = e.changedTouches[0].screenX;
+        });
+
+        this.track.addEventListener('touchend', (e) => {
+          this.touchEndX = e.changedTouches[0].screenX;
+          this.handleSwipe();
+        });
+      }
+
+      setupDots() {
+        if (!this.dotsContainer) return;
+
+        this.dotsContainer.innerHTML = '';
+        const totalPages = Math.ceil(this.slides.length / this.videosPerView);
+
+        for (let i = 0; i < totalPages; i++) {
+          const dot = document.createElement('button');
+          dot.className = 'ai-video-gallery__dot-{{ ai_gen_id }}';
+          dot.setAttribute('aria-label', `Go to page ${i + 1}`);
+          dot.addEventListener('click', () => this.goToPage(i));
+          this.dotsContainer.appendChild(dot);
+        }
+      }
+
+      setupIntersectionObserver() {
+        if (!this.autoplay) return;
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            const videos = entry.target.querySelectorAll('video');
+            if (entry.isIntersecting) {
+              videos.forEach(video => {
+                if (video.paused) {
+                  video.play().catch(() => {});
+                }
+              });
+            } else {
+              videos.forEach(video => {
+                if (!video.paused) {
+                  video.pause();
+                }
+              });
+            }
+          });
+        }, { threshold: 0.5 });
+
+        observer.observe(this);
+      }
+
+      handleSwipe() {
+        const swipeThreshold = 50;
+        const diff = this.touchStartX - this.touchEndX;
+
+        if (Math.abs(diff) > swipeThreshold) {
+          if (diff > 0) {
+            this.goToNext();
+          } else {
+            this.goToPrevious();
+          }
+        }
+      }
+
+      goToPrevious() {
+        if (this.isTransitioning || this.currentIndex === 0) return;
+        this.currentIndex = Math.max(0, this.currentIndex - 1);
+        this.updateView();
+      }
+
+      goToNext() {
+        if (this.isTransitioning || this.currentIndex >= this.maxIndex) return;
+        this.currentIndex = Math.min(this.maxIndex, this.currentIndex + 1);
+        this.updateView();
+      }
+
+      goToPage(pageIndex) {
+        if (this.isTransitioning) return;
+        this.currentIndex = Math.min(pageIndex * this.videosPerView, this.maxIndex);
+        this.updateView();
+      }
+
+      updateView() {
+        if (!this.track || this.slides.length === 0) return;
+
+        this.isTransitioning = true;
+
+        const slideWidth = this.slides[0].offsetWidth;
+        const gap = parseInt(getComputedStyle(this.track).gap) || 0;
+        const offset = -(this.currentIndex * (slideWidth + gap));
+
+        this.track.style.transform = `translateX(${offset}px)`;
+
+        this.prevButton.disabled = this.currentIndex === 0;
+        this.nextButton.disabled = this.currentIndex >= this.maxIndex;
+
+        this.updateDots();
+
+        setTimeout(() => {
+          this.isTransitioning = false;
+        }, 300);
+      }
+
+      updateDots() {
+        if (!this.dotsContainer) return;
+
+        const dots = this.dotsContainer.querySelectorAll('.ai-video-gallery__dot-{{ ai_gen_id }}');
+        const currentPage = Math.floor(this.currentIndex / this.videosPerView);
+
+        dots.forEach((dot, index) => {
+          dot.classList.toggle('active', index === currentPage);
+        });
+      }
+    }
+
+    customElements.define('video-gallery-{{ ai_gen_id }}', VideoGallery{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Video gallery",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Video Gallery"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Discover our latest collection"
+    },
+    {
+      "type": "header",
+      "content": "Videos"
+    },
+    {
+      "type": "url",
+      "id": "video_1",
+      "label": "Video 1"
+    },
+    {
+      "type": "url",
+      "id": "video_2",
+      "label": "Video 2"
+    },
+    {
+      "type": "url",
+      "id": "video_3",
+      "label": "Video 3"
+    },
+    {
+      "type": "url",
+      "id": "video_4",
+      "label": "Video 4"
+    },
+    {
+      "type": "url",
+      "id": "video_5",
+      "label": "Video 5"
+    },
+    {
+      "type": "url",
+      "id": "video_6",
+      "label": "Video 6"
+    },
+    {
+      "type": "url",
+      "id": "video_7",
+      "label": "Video 7"
+    },
+    {
+      "type": "url",
+      "id": "video_8",
+      "label": "Video 8"
+    },
+    {
+      "type": "url",
+      "id": "video_9",
+      "label": "Video 9"
+    },
+    {
+      "type": "url",
+      "id": "video_10",
+      "label": "Video 10"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "videos_per_view",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "label": "Videos per view (desktop)",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "video_width",
+      "min": 200,
+      "max": 400,
+      "step": 20,
+      "unit": "px",
+      "label": "Video width (desktop)",
+      "default": 280
+    },
+    {
+      "type": "range",
+      "id": "video_width_mobile",
+      "min": 200,
+      "max": 320,
+      "step": 20,
+      "unit": "px",
+      "label": "Video width (mobile)",
+      "default": 260
+    },
+    {
+      "type": "range",
+      "id": "video_gap",
+      "min": 8,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Gap between videos",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "video_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Video border radius",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Playback"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay videos",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show dots navigation",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "nav_button_color",
+      "label": "Navigation button color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "nav_button_hover_color",
+      "label": "Navigation button hover color",
+      "default": "#f0f0f0"
+    },
+    {
+      "type": "color",
+      "id": "nav_icon_color",
+      "label": "Navigation icon color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "dot_color",
+      "label": "Dot color",
+      "default": "#cccccc"
+    },
+    {
+      "type": "color",
+      "id": "dot_active_color",
+      "label": "Active dot color",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 20,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Title size",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "subtitle_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Subtitle size",
+      "default": 16
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video gallery"
+    }
+  ]
+}
+{% endschema %}
